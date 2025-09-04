@@ -67,7 +67,7 @@ export function ToolMessage({
               item: { description: string; completed: boolean },
               index: number
             ) => (
-              <div key={index} className="flex items-center gap-3 px-4 py-1">
+              <div key={`${toolInvocation.id}-${index}`} className="flex items-center gap-3 px-4 py-1">
                 {/* Minimal sleek checkbox */}
                 <div className="relative flex-shrink-0 pointer-events-none">
                   <div
@@ -161,7 +161,7 @@ function EditFileTool({
         {toolInvocation.input?.edits?.map?.(
           (edit: { newText: string; oldText: string }, index: number) =>
             (edit.oldText || edit.newText) && (
-              <CodeBlock key={index} className="overflow-scroll py-2">
+              <CodeBlock key={`${toolInvocation.id}-${index}`} className="overflow-scroll py-2">
                 <CodeBlockCode
                   code={edit.oldText?.split("\n").slice(0, 5).join("\n")}
                   language={"tsx"}
@@ -296,7 +296,7 @@ function ToolBlock(props: {
           props.toolInvocation.output?.isError &&
           props.toolInvocation.output?.content?.map(
             (content: { type: "text"; text: string }, i: number) => (
-              <CodeBlock key={i} className="overflow-scroll py-2">
+              <CodeBlock key={`${props.toolInvocation?.id}-${i}`} className="overflow-scroll py-2">
                 <CodeBlockCode
                   className="[&>pre]:py-0! py-2 text-red-500"
                   code={content.text}

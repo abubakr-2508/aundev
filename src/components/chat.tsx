@@ -138,13 +138,13 @@ function MessageBody({ message }: { message: any }) {
         <div className="bg-neutral-200 dark:bg-neutral-700 rounded-xl px-4 py-1 max-w-[80%] ml-auto">
           {message.parts.map((part: any, index: number) => {
             if (part.type === "text") {
-              return <div key={index}>{part.text}</div>;
+              return <div key={`${message.id}-${index}`}>{part.text}</div>;
             } else if (
               part.type === "file" &&
               part.mediaType?.startsWith("image/")
             ) {
               return (
-                <div key={index} className="mt-2">
+                <div key={`${message.id}-${index}`} className="mt-2">
                   <Image
                     src={part.url as string}
                     alt="User uploaded image"
@@ -156,7 +156,7 @@ function MessageBody({ message }: { message: any }) {
                 </div>
               );
             }
-            return <div key={index}>unexpected message</div>;
+            return <div key={`${message.id}-${index}`}>unexpected message</div>;
           })}
         </div>
       </div>
@@ -169,7 +169,7 @@ function MessageBody({ message }: { message: any }) {
         {message.parts.map((part: any, index: any) => {
           if (part.type === "text") {
             return (
-              <div key={index} className="mb-4">
+              <div key={`${message.id}-${index}`} className="mb-4">
                 <Markdown className="prose prose-sm dark:prose-invert max-w-none">
                   {part.text}
                 </Markdown>
@@ -202,7 +202,7 @@ function MessageBody({ message }: { message: any }) {
             //   message.parts!.length - 1 == index &&
             //   part.toolInvocation.state !== "result"
             // ) {
-            return <ToolMessage key={index} toolInvocation={part} />;
+            return <ToolMessage toolInvocation={part} />;
             // } else {
             //   return undefined;
             // }
