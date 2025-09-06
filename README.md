@@ -2,7 +2,7 @@
   <img src="icon.png" alt="description" width="75">
 </p>
 
-# Adorable
+# AUN.AI
 
 Open-source version of **Lovable** - an AI agent that can make websites and apps through a chat interface.
 
