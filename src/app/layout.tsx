@@ -18,21 +18,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Additional PKCE fix for Stack Auth
-if (typeof window !== 'undefined') {
-  // Ensure crypto.digest is available
-  if (window.crypto && !window.crypto.digest) {
-    // @ts-ignore
-    window.crypto.digest = async function(algorithm, data) {
-      const crypto = require('crypto');
-      if (algorithm === 'SHA-256' || algorithm === 'sha-256') {
-        return crypto.createHash('sha256').update(Buffer.from(data)).digest().buffer;
-      }
-      throw new Error(`Unsupported algorithm: ${algorithm}`);
-    };
-  }
-}
-
 export const metadata: Metadata = {
   title: "aun.ai",
   description: "Open Source AI App Builder",
