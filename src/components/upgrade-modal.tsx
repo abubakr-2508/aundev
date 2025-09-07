@@ -10,10 +10,10 @@ import { loadStripe } from "@stripe/stripe-js";
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<'monthly' | 'yearly' | false>(false);
 
   const handleUpgrade = async (plan: 'monthly' | 'yearly') => {
-    setIsLoading(true);
+    setIsLoading(plan);
     
     try {
       // Call your API to create a Stripe checkout session
@@ -65,10 +65,10 @@ export function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
             </div>
             <Button 
               onClick={() => handleUpgrade('monthly')} 
-              disabled={isLoading}
+              disabled={isLoading === 'monthly'}
               className="whitespace-nowrap"
             >
-              {isLoading ? "Processing..." : "upgrade to aun.ai pro"}
+              {isLoading === 'monthly' ? "Processing..." : "upgrade to aun.ai pro"}
             </Button>
           </div>
           
@@ -79,10 +79,10 @@ export function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
             </div>
             <Button 
               onClick={() => handleUpgrade('yearly')} 
-              disabled={isLoading}
+              disabled={isLoading === 'yearly'}
               className="whitespace-nowrap"
             >
-              {isLoading ? "Processing..." : "upgrade to aun.ai pro"}
+              {isLoading === 'yearly' ? "Processing..." : "upgrade to aun.ai pro"}
             </Button>
           </div>
           

@@ -5,13 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { loadStripe } from "@stripe/stripe-js";
 
-// Make sure to call `loadStripe` outside of a component’s render to avoid
+// Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export function UpgradePrompt({ messageCount }: { messageCount: number }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState<'monthly' | 'yearly' | false>(false);
 
   // Show the upgrade prompt after 5 messages
   useEffect(() => {
@@ -21,7 +21,7 @@ export function UpgradePrompt({ messageCount }: { messageCount: number }) {
   }, [messageCount]);
 
   const handleUpgrade = async (plan: 'monthly' | 'yearly') => {
-    setIsLoading(true);
+    setIsLoading(plan);
     
     try {
       // Call your API to create a Stripe checkout session
@@ -73,10 +73,10 @@ export function UpgradePrompt({ messageCount }: { messageCount: number }) {
             </div>
             <Button 
               onClick={() => handleUpgrade('monthly')} 
-              disabled={isLoading}
+              disabled={isLoading === 'monthly' || isLoading === 'yearly'}
               className="whitespace-nowrap"
             >
-              {isLoading ? "Processing..." : "upgrade to aun.ai pro"}
+              {isLoading === 'monthly' ? "Processing..." : "upgrade to aun.ai pro"}
             </Button>
           </div>
           
@@ -87,10 +87,10 @@ export function UpgradePrompt({ messageCount }: { messageCount: number }) {
             </div>
             <Button 
               onClick={() => handleUpgrade('yearly')} 
-              disabled={isLoading}
+              disabled={isLoading === 'monthly' || isLoading === 'yearly'}
               className="whitespace-nowrap"
             >
-              {isLoading ? "Processing..." : "upgrade to aun.ai pro"}
+              {isLoading === 'yearly' ? "Processing..." : "upgrade to aun.ai pro"}
             </Button>
           </div>
           

@@ -56,16 +56,17 @@ export default function Home() {
               <h1 className="text-lg font-bold flex-1 sm:w-80">
                 <a href="https://www.aun.ai">AUN.AI</a>
               </h1>
-              <Image
+              {/* Logo hidden as per user request */}
+              {/* <Image
                 className="dark:invert mx-2"
                 src={LogoSvg}
                 alt="aun.ai Logo"
                 width={64}
                 height={64}
-              />
+              /> */}
               <div className="flex items-center gap-4 flex-1 sm:w-80 justify-end">
                 <Button onClick={handleUpgradeClick} variant="default" size="sm">
-                  Upgrade to Pro
+                  Upgrade
                 </Button>
                 <UserButton />
               </div>
@@ -149,7 +150,7 @@ function Examples({ setPrompt }: { setPrompt: (text: string) => void }) {
         />
         <ExampleButton
           text="Tools for managing  remote teams"
-          promptText="Build a tools for managing  remote teams."
+          promptText="Build a tools for managing  remote team."
           onClick={(text) => {
             console.log("Example clicked:", text);
             setPrompt(text);

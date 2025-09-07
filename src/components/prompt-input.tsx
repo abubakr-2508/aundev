@@ -8,8 +8,8 @@ export function PromptInputTextareaWithTypingAnimation() {
   const exampleIdeas = [
     "a personal finance tracking tool",
     "a social media app for book lovers",
-    "a tool for managing remote teams ",
-    "a social network for coders to find grass to touch",
+    "a tool for managing remote teams",
+
   ];
 
   const { displayText } = useTypingAnimation({
