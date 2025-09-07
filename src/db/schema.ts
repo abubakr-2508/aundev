@@ -57,3 +57,14 @@ export const appDeployments = pgTable("app_deployments", {
   deploymentId: text("deployment_id").notNull(),
   commit: text("commit").notNull(), // sha of the commit
 });
+
+export const userSubscriptions = pgTable("user_subscriptions", {
+  userId: text("user_id").primaryKey(),
+  messageCount: text("message_count").notNull().default("0"),
+  subscriptionType: text("subscription_type").notNull().default("free"), // 'free', 'monthly', 'yearly'
+  subscriptionStatus: text("subscription_status").notNull().default("active"), // 'active', 'cancelled', 'expired'
+  subscriptionStartDate: timestamp("subscription_start_date"),
+  subscriptionEndDate: timestamp("subscription_end_date"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+});

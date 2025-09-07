@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUserApps } from "@/actions/user-apps";
 import { AppCard } from "./app-card";
+// Removed SubscriptionDashboard import
 
 export function UserApps() {
   const queryClient = useQueryClient();
@@ -15,16 +16,19 @@ export function UserApps() {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4 sm:px-8">
-      {data.map((app) => (
-        <AppCard 
-          key={app.id}
-          id={app.id}
-          name={app.name}
-          createdAt={app.createdAt}
-          onDelete={onAppDeleted}
-        />
-      ))}
+    <div className="space-y-8">
+      {/* Removed SubscriptionDashboard component */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4 sm:px-8">
+        {data.map((app) => (
+          <AppCard 
+            key={app.id}
+            id={app.id}
+            name={app.name}
+            createdAt={app.createdAt}
+            onDelete={onAppDeleted}
+          />
+        ))}
+      </div>
     </div>
   );
 }

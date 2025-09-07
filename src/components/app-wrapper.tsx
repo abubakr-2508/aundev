@@ -7,6 +7,7 @@ import { MessageCircle, Monitor } from "lucide-react";
 import WebView from "./webview";
 import { UIMessage } from "ai";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ChatHistory } from "./chat-history";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ export default function AppWrapper({
     "chat"
   );
   const [isMobile, setIsMobile] = useState(false);
+  const [isChatHistoryCollapsed, setIsChatHistoryCollapsed] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -56,78 +58,132 @@ export default function AppWrapper({
     };
   }, []);
 
+  const toggleChatHistory = () => {
+    setIsChatHistoryCollapsed(!isChatHistoryCollapsed);
+  };
+
   return (
     <div className="h-screen flex flex-col" style={{ height: "100dvh" }}>
-      {/* Desktop and Mobile container */}
-      <div className="flex-1 overflow-hidden flex flex-col md:grid md:grid-cols-[1fr_2fr]">
-        {/* Chat component - positioned for both mobile and desktop */}
-        <div
-          className={
-            isMobile
-              ? `absolute inset-0 z-10 flex flex-col transition-transform duration-200 ${
-                  mobileActiveTab === "chat"
-                    ? "translate-x-0"
-                    : "-translate-x-full"
-                }`
-              : "h-full overflow-hidden flex flex-col"
-          }
-          style={
-            isMobile
-              ? {
-                  top: "env(safe-area-inset-top)",
-                  bottom: "calc(60px + env(safe-area-inset-bottom))",
-                }
-              : undefined
-          }
-        >
-          <QueryClientProvider client={queryClient}>
-            <Chat
-              topBar={
-                <TopBar
-                  appName={appName}
-                  repoId={repoId}
-                  consoleUrl={consoleUrl}
-                  codeServerUrl={codeServerUrl}
-                />
-              }
-              appId={appId}
-              initialMessages={initialMessages}
-              key={appId}
-              running={running}
-            />
-          </QueryClientProvider>
-        </div>
-
-        {/* Preview component - positioned for both mobile and desktop */}
-        <div
-          className={
-            isMobile
-              ? `absolute inset-0 z-10 transition-transform duration-200 ${
-                  mobileActiveTab === "preview"
-                    ? "translate-x-0"
-                    : "translate-x-full"
-                }`
-              : "overflow-auto"
-          }
-          style={
-            isMobile
-              ? {
-                  top: "env(safe-area-inset-top)",
-                  bottom: "calc(60px + env(safe-area-inset-bottom))",
-                }
-              : undefined
-          }
-        >
-          <div className="h-full overflow-hidden relative">
-            <WebView
-              repo={repo}
-              baseId={baseId}
-              appId={appId}
-              domain={domain}
+      {/* Desktop layout - Chat history on left, chat and preview on right */}
+      {!isMobile && (
+        <div className="flex-1 overflow-hidden flex">
+          {/* Chat History Sidebar - Only on desktop */}
+          <div className="flex-shrink-0 hidden md:block">
+            <ChatHistory 
+              isCollapsed={isChatHistoryCollapsed} 
+              onToggle={toggleChatHistory} 
             />
           </div>
+          
+          {/* Main Content Area */}
+          <div className="flex-1 flex">
+            {/* Chat component */}
+            <div className="flex-1 flex flex-col border-r">
+              <QueryClientProvider client={queryClient}>
+                <Chat
+                  topBar={
+                    <TopBar
+                      appName={appName}
+                      repoId={repoId}
+                      consoleUrl={consoleUrl}
+                      codeServerUrl={codeServerUrl}
+                    />
+                  }
+                  appId={appId}
+                  initialMessages={initialMessages}
+                  key={appId}
+                  running={running}
+                />
+              </QueryClientProvider>
+            </div>
+
+            {/* Preview component */}
+            <div className="flex-1 overflow-auto">
+              <div className="h-full overflow-hidden relative">
+                <WebView
+                  repo={repo}
+                  baseId={baseId}
+                  appId={appId}
+                  domain={domain}
+                />
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Mobile layout - unchanged */}
+      {isMobile && (
+        <div className="flex-1 overflow-hidden flex flex-col md:grid md:grid-cols-[1fr_2fr]">
+          {/* Chat component - positioned for both mobile and desktop */}
+          <div
+            className={
+              isMobile
+                ? `absolute inset-0 z-10 flex flex-col transition-transform duration-200 ${
+                    mobileActiveTab === "chat"
+                      ? "translate-x-0"
+                      : "-translate-x-full"
+                  }`
+                : "h-full overflow-hidden flex flex-col"
+            }
+            style={
+              isMobile
+                ? {
+                    top: "env(safe-area-inset-top)",
+                    bottom: "calc(60px + env(safe-area-inset-bottom))",
+                  }
+                : undefined
+            }
+          >
+            <QueryClientProvider client={queryClient}>
+              <Chat
+                topBar={
+                  <TopBar
+                    appName={appName}
+                    repoId={repoId}
+                    consoleUrl={consoleUrl}
+                    codeServerUrl={codeServerUrl}
+                  />
+                }
+                appId={appId}
+                initialMessages={initialMessages}
+                key={appId}
+                running={running}
+              />
+            </QueryClientProvider>
+          </div>
+
+          {/* Preview component - positioned for both mobile and desktop */}
+          <div
+            className={
+              isMobile
+                ? `absolute inset-0 z-10 transition-transform duration-200 ${
+                    mobileActiveTab === "preview"
+                      ? "translate-x-0"
+                      : "translate-x-full"
+                  }`
+                : "overflow-auto"
+            }
+            style={
+              isMobile
+                ? {
+                    top: "env(safe-area-inset-top)",
+                    bottom: "calc(60px + env(safe-area-inset-bottom))",
+                  }
+                : undefined
+            }
+          >
+            <div className="h-full overflow-hidden relative">
+              <WebView
+                repo={repo}
+                baseId={baseId}
+                appId={appId}
+                domain={domain}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Mobile tab navigation */}
       {isMobile && (

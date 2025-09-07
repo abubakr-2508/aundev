@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
-
 import { PromptInputBasic } from "./chatinput";
 import { Markdown } from "./ui/markdown";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChatContainer } from "./ui/chat-container";
 import { UIMessage } from "ai";
 import { ToolMessage } from "./tools";
@@ -12,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { chatState } from "@/actions/chat-streaming";
 import { CompressedImage } from "@/lib/image-compression";
 import { useChatSafe } from "./use-chat";
+import { UpgradePrompt } from "./upgrade-prompt";
 
 export default function Chat(props: {
   appId: string;
@@ -36,6 +36,45 @@ export default function Chat(props: {
   });
 
   const [input, setInput] = useState("");
+  const [messageCount, setMessageCount] = useState(0);
+
+  // Fetch initial message count
+  useEffect(() => {
+    const fetchMessageCount = async () => {
+      try {
+        const response = await fetch("/api/track-message");
+        if (response.ok) {
+          const data = await response.json();
+          setMessageCount(data.messageCount);
+        }
+      } catch (error) {
+        console.error("Error fetching message count:", error);
+      }
+    };
+
+    fetchMessageCount();
+  }, []);
+
+  // Track message count
+  useEffect(() => {
+    // Only count user messages, not AI responses
+    const userMessages = messages.filter(m => m.role === "user");
+    if (userMessages.length > messageCount) {
+      // Increment message count and send to API
+      const newCount = messageCount + 1;
+      setMessageCount(newCount);
+      
+      // Send to API to track the message
+      fetch("/api/track-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }).catch(error => {
+        console.error("Error tracking message:", error);
+      });
+    }
+  }, [messages.length, messageCount]);
 
   const onSubmit = (e?: React.FormEvent<HTMLFormElement>) => {
     if (e?.preventDefault) {
@@ -52,7 +91,7 @@ export default function Chat(props: {
       },
       {
         headers: {
-          "Adorable-App-Id": props.appId,
+          "aunai-App-Id": props.appId,
         },
       }
     );
@@ -83,7 +122,7 @@ export default function Chat(props: {
       },
       {
         headers: {
-          "Adorable-App-Id": props.appId,
+          "aunai-App-Id": props.appId,
         },
       }
     );
@@ -94,7 +133,7 @@ export default function Chat(props: {
     await fetch("/api/chat/" + props.appId + "/stream", {
       method: "DELETE",
       headers: {
-        "Adorable-App-Id": props.appId,
+  "aunai-App-Id": props.appId,
       },
     });
   }
@@ -127,6 +166,8 @@ export default function Chat(props: {
           isGenerating={props.isLoading || chat?.state === "running"}
         />
       </div>
+      {/* Show upgrade prompt after 5 messages */}
+      <UpgradePrompt messageCount={messageCount} />
     </div>
   );
 }

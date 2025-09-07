@@ -2,7 +2,7 @@
   <img src="icon.png" alt="description" width="75">
 </p>
 
-# Adorable
+# aun.ai
 
 Open-source version of **Lovable** - an AI agent that can make websites and apps through a chat interface.
 
@@ -14,6 +14,7 @@ For guidance on building app builders with AI, see the [Freestyle guide on Build
 - Patch-based code editing with user approval
 - Git integration for version control
 - Preview capabilities for code changes
+- Stripe payment integration for Pro version
 
 ## Setup Instructions
 
@@ -25,14 +26,15 @@ For guidance on building app builders with AI, see the [Freestyle guide on Build
 - Anthropic API key
 - Freestyle API key
 - Morph API key (optional)
+- Stripe account (for payment processing)
 
 ### Installation
 
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/freestyle-sh/adorable
-   cd adorable
+   git clone https://github.com/freestyle-sh/aun.ai
+   cd aun.ai
    ```
 
 2. Install dependencies:
@@ -50,7 +52,7 @@ For guidance on building app builders with AI, see the [Freestyle guide on Build
 
    ```
    # Database
-   DATABASE_URL=postgresql://username:password@localhost:5432/adorable
+   DATABASE_URL=postgresql://username:password@localhost:5432/aun.ai
 
    # Anthropic API
    ANTHROPIC_API_KEY=your_anthropic_api_key
@@ -70,7 +72,7 @@ For guidance on building app builders with AI, see the [Freestyle guide on Build
 The easiest way to run Redis locally is with Docker:
 
 ```bash
-docker run --name adorable-redis -p 6379:6379 -d redis
+docker run --name aunai-redis -p 6379:6379 -d redis
 ```
 
 This will start a Redis server on port 6379. If you already have Redis running, you can skip this step.
@@ -81,7 +83,7 @@ Add the following to your `.env` file (if not already present):
 REDIS_URL=redis://localhost:6379
 ```
 
-6. Set up [Stack Auth](https://stack-auth.com)
+7. Set up [Stack Auth](https://stack-auth.com)
 
 Go to the [Stack Auth dashboard](https://app.stack-auth.com) and create a new application. In Configuration > Domains, enable `Allow all localhost callbacks for development` to be able to sign in locally.
 
@@ -93,17 +95,17 @@ NEXT_PUBLIC_STACK_PUBLISHABLE_CLIENT_KEY=<your-publishable-client-key>
 STACK_SECRET_SERVER_KEY=<your-secret-server-key>
 ```
 
-7. Add a Preview Domain (optional)
+8. Add a Preview Domain (optional)
 
 Go to the [Freestyle dashboard](https://admin.freestyle.sh/dashboard/domains) and verify a new domain. Then follow the [DNS Instructions](https://docs.freestyle.sh/web/deploy-to-custom-domain) to point your domain to Freestyle.
 
 Finally, add the following environment variable to your `.env` file:
 
 ```env
-PREVIEW_DOMAIN=<your-domain> # formatted like adorable.app
+PREVIEW_DOMAIN=<your-domain> # formatted like aun.ai.app
 ```
 
-8. Add Morph for Fast Apply (optional)
+9. Add Morph for Fast Apply (optional)
 
 Get a Morph API key from [morphllm.com](https://morphllm.com) and add it to your `.env` file to enable the fast edit tool:
 
@@ -113,17 +115,43 @@ MORPH_API_KEY=<your-morph-api-key>
 
 This automatically enables the Morph fast edit tool which provides faster code modifications.
 
-9. Run the development server:
+10. Set up Stripe for Payment Processing
+
+Sign up for a [Stripe account](https://dashboard.stripe.com/register) and obtain your API keys:
+
+- Publishable key (starts with `pk_`)
+- Secret key (starts with `sk_`)
+- Webhook signing secret
+
+Create two recurring prices in your Stripe dashboard:
+- Monthly plan: $25/month
+- Yearly plan: $250/year
+
+Add the following environment variables to your `.env` file:
+
+```env
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<your-stripe-publishable-key>
+STRIPE_SECRET_KEY=<your-stripe-secret-key>
+STRIPE_WEBHOOK_SECRET=<your-webhook-signing-secret>
+STRIPE_MONTHLY_PRICE_ID=<your-monthly-price-id>
+STRIPE_YEARLY_PRICE_ID=<your-yearly-price-id>
+NEXT_PUBLIC_BASE_URL=http://localhost:3000
+```
+
+See [Payment Setup Documentation](./docs/payment-setup.md) for detailed instructions.
+
+11. Run the development server:
 
    ```bash
    npm run dev
    ```
 
-10. Open [http://localhost:3000](http://localhost:3000) in your browser.
+12. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Developer Documentation
 
 - [Forking Guide](./docs/forking.md) - Comprehensive guide for developers working with this codebase
+- [Payment Setup](./docs/payment-setup.md) - Detailed instructions for setting up Stripe payments
 
 ## Deployment
 
