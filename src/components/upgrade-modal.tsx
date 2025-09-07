@@ -68,7 +68,7 @@ export function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               disabled={isLoading === 'monthly'}
               className="whitespace-nowrap"
             >
-              {isLoading === 'monthly' ? "Processing..." : "upgrade to aun.ai pro"}
+              {isLoading === 'monthly' ? "Processing..." : "Upgrade"}
             </Button>
           </div>
           
@@ -82,7 +82,7 @@ export function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
               disabled={isLoading === 'yearly'}
               className="whitespace-nowrap"
             >
-              {isLoading === 'yearly' ? "Processing..." : "upgrade to aun.ai pro"}
+              {isLoading === 'yearly' ? "Processing..." : "Upgrade"}
             </Button>
           </div>
           
