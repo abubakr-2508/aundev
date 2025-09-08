@@ -74,10 +74,11 @@ export function PromptInputBasic({
   };
 
   const handleSubmitWithData = () => {
-    if (onSubmitWithImages && (input.trim() || images.length > 0)) {
+    // Ensure onSubmitWithImages is a function before calling it
+    if (typeof onSubmitWithImages === 'function' && (input.trim() || images.length > 0)) {
       onSubmitWithImages(input, images);
       setImages([]);
-    } else if (handleSubmit) {
+    } else if (typeof handleSubmit === 'function') {
       handleSubmit();
     }
   };

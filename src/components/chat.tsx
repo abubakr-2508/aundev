@@ -100,6 +100,11 @@ export default function Chat(props: {
   };
 
   const onSubmitWithImages = (text: string, images: CompressedImage[]) => {
+    // Validate inputs
+    if (!text.trim() && images.length === 0) {
+      return;
+    }
+
     const parts: Parameters<typeof sendMessage>[0]["parts"] = [];
 
     if (text.trim()) {
@@ -168,7 +173,7 @@ export default function Chat(props: {
           isGenerating={props.isLoading || chat?.state === "running"}
         />
       </div>
-      {/* Show upgrade prompt after 10 messages */}
+      {/* Show upgrade prompt after 10 messages */
       <UpgradePrompt messageCount={messageCount} />
     </div>
   );
