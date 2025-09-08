@@ -8,12 +8,20 @@ function base64urlEncode(buffer: ArrayBuffer): string {
 }
 
 // PKCE helper functions
-async function sha256(buffer: string): Promise<ArrayBuffer> {
-  return crypto.createHash('sha256').update(buffer).digest();
+async function sha256(buffer: ArrayBuffer): Promise<ArrayBuffer> {
+  const data = Buffer.from(buffer);
+  return crypto.createHash('sha256').update(data).digest().buffer;
 }
 
 async function calculatePKCECodeChallenge(code_verifier: string): Promise<string> {
-  const hashed = await sha256(code_verifier);
+  // Convert the code_verifier string to an ArrayBuffer
+  const encoder = new TextEncoder();
+  const data = encoder.encode(code_verifier);
+  
+  // Hash the data using SHA-256
+  const hashed = await sha256(data.buffer);
+  
+  // Encode the hash as base64url
   return base64urlEncode(hashed);
 }
 
@@ -25,11 +33,19 @@ if (typeof window !== 'undefined' && !window.crypto) {
       return crypto.randomFillSync(array);
     },
     subtle: {
-      digest: async (algorithm: string, data: BufferSource) => {
-        if (algorithm === 'SHA-256' || algorithm === 'sha-256') {
-          return crypto.createHash('sha256').update(Buffer.from(data)).digest().buffer;
+      digest: async (algorithm: string | { name: string }, data: BufferSource) => {
+        let algoName: string;
+        if (typeof algorithm === 'string') {
+          algoName = algorithm;
+        } else {
+          algoName = algorithm.name;
         }
-        throw new Error(`Unsupported algorithm: ${algorithm}`);
+        
+        if (algoName === 'SHA-256' || algoName === 'sha-256') {
+          const buffer = Buffer.from(data);
+          return crypto.createHash('sha256').update(buffer).digest().buffer;
+        }
+        throw new Error(`Unsupported algorithm: ${algoName}`);
       }
     },
     webcrypto: crypto.webcrypto
@@ -43,11 +59,19 @@ if (typeof global !== 'undefined' && !global.crypto) {
       return crypto.randomFillSync(array);
     },
     subtle: {
-      digest: async (algorithm: string, data: BufferSource) => {
-        if (algorithm === 'SHA-256' || algorithm === 'sha-256') {
-          return crypto.createHash('sha256').update(Buffer.from(data)).digest().buffer;
+      digest: async (algorithm: string | { name: string }, data: BufferSource) => {
+        let algoName: string;
+        if (typeof algorithm === 'string') {
+          algoName = algorithm;
+        } else {
+          algoName = algorithm.name;
         }
-        throw new Error(`Unsupported algorithm: ${algorithm}`);
+        
+        if (algoName === 'SHA-256' || algoName === 'sha-256') {
+          const buffer = Buffer.from(data);
+          return crypto.createHash('sha256').update(buffer).digest().buffer;
+        }
+        throw new Error(`Unsupported algorithm: ${algoName}`);
       }
     },
     webcrypto: crypto.webcrypto

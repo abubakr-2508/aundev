@@ -66,7 +66,7 @@ export function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
             <Button 
               onClick={() => handleUpgrade('monthly')} 
               disabled={isLoading === 'monthly'}
-              className="whitespace-nowrap"
+              className={isLoading === 'monthly' ? "whitespace-nowrap opacity-50" : "whitespace-nowrap"}
             >
               {isLoading === 'monthly' ? "Processing..." : "Upgrade"}
             </Button>
@@ -80,7 +80,7 @@ export function UpgradeModal({ isOpen, onClose }: { isOpen: boolean; onClose: ()
             <Button 
               onClick={() => handleUpgrade('yearly')} 
               disabled={isLoading === 'yearly'}
-              className="whitespace-nowrap"
+              className={isLoading === 'yearly' ? "whitespace-nowrap opacity-50" : "whitespace-nowrap"}
             >
               {isLoading === 'yearly' ? "Processing..." : "Upgrade"}
             </Button>

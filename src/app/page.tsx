@@ -5,7 +5,7 @@ import { PromptInput, PromptInputActions } from "@/components/ui/prompt-input";
 import { FrameworkSelector } from "@/components/framework-selector";
 import Image from "next/image";
 import LogoSvg from "@/logo.svg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ExampleButton } from "@/components/ExampleButton";
 import { UserButton } from "@stackframe/stack";
@@ -23,6 +23,18 @@ export default function Home() {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const router = useRouter();
+
+  // Listen for upgrade requests from other components
+  useEffect(() => {
+    const handleUpgradeRequest = () => {
+      setIsUpgradeModalOpen(true);
+    };
+
+    window.addEventListener('upgradeRequested', handleUpgradeRequest);
+    return () => {
+      window.removeEventListener('upgradeRequested', handleUpgradeRequest);
+    };
+  }, []);
 
   const handleSubmit = async () => {
     setIsLoading(true);

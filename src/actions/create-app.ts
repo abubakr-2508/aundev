@@ -7,21 +7,54 @@ import { freestyle } from "@/lib/freestyle";
 import { templates } from "@/lib/templates";
 import { memory, builderAgent } from "@/mastra/agents/builder";
 import { sendMessageWithStreaming } from "@/lib/internal/stream-manager";
+import { count, eq } from "drizzle-orm";
 
 export async function createApp({
   initialMessage,
   templateId,
 }: {
   initialMessage?: string;
-  templateId: string;
+  templateId?: string;
 }) {
   console.time("get user");
   const user = await getUser();
   console.timeEnd("get user");
 
-  if (!templates[templateId]) {
+  // Check user's subscription and app count
+  console.time("check subscription");
+  const subscriptionResponse = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/user-subscription`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!subscriptionResponse.ok) {
+    throw new Error("Failed to fetch subscription information");
+  }
+
+  const subscription = await subscriptionResponse.json();
+  console.timeEnd("check subscription");
+
+  // Check if user has reached app limit (3 for free, unlimited for pro)
+  const isFreeUser = subscription.subscriptionType === "free";
+  const appCount = subscription.appCount || 0;
+  
+  if (isFreeUser && appCount >= 3) {
+    throw new Error("Free plan limit reached. You can only create 3 apps. Please upgrade to Pro for unlimited apps.");
+  }
+
+  // Validate and default templateId
+  let validTemplateId = templateId;
+  if (!validTemplateId || typeof validTemplateId !== 'string') {
+    validTemplateId = 'nextjs'; // default template
+  }
+
+  if (!templates[validTemplateId]) {
     throw new Error(
-      `Template ${templateId} not found. Available templates: ${Object.keys(templates).join(", ")}`
+      `Template ${validTemplateId} not found. Available templates: ${Object.keys(templates).join(", ")}`
     );
   }
 
@@ -31,7 +64,7 @@ export async function createApp({
     public: true,
     source: {
       type: "git",
-      url: templates[templateId].repo,
+      url: templates[validTemplateId].repo,
     },
   });
   await freestyle.grantGitPermission({

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import Image from "next/image";
 import { PromptInputBasic } from "./chatinput";
 import { Markdown } from "./ui/markdown";
@@ -154,6 +155,7 @@ export default function Chat(props: {
           ))}
         </ChatContainer>
       </div>
+      
       <div className="flex-shrink-0 p-3 transition-all bg-background md:backdrop-blur-sm">
         <PromptInputBasic
           stop={handleStop}
@@ -166,7 +168,7 @@ export default function Chat(props: {
           isGenerating={props.isLoading || chat?.state === "running"}
         />
       </div>
-      {/* Show upgrade prompt after 5 messages */}
+      {/* Show upgrade prompt after 10 messages */}
       <UpgradePrompt messageCount={messageCount} />
     </div>
   );
@@ -204,10 +206,43 @@ function MessageBody({ message }: { message: any }) {
     );
   }
 
+  // Handle AI responses - this is the fix for displaying AI generated answers
+  if (message.role === "assistant") {
+    return (
+      <div className="flex justify-start py-1 mb-4">
+        <div className="bg-blue-100 dark:bg-blue-900 rounded-xl px-4 py-1 max-w-[80%] mr-auto">
+          {Array.isArray(message.parts) && message.parts.length > 0 ? (
+            message.parts.map((part: any, index: number) => {
+              if (part.type === "text") {
+                return (
+                  <div key={`${message.id}-${index}`} className="mb-2">
+                    <Markdown className="prose prose-sm dark:prose-invert max-w-none">
+                      {part.text}
+                    </Markdown>
+                  </div>
+                );
+              }
+              
+              if (part.type.startsWith("tool-")) {
+                return <ToolMessage key={`${message.id}-${index}`} toolInvocation={part} />;
+              }
+              
+              // Return null for unhandled cases with a key
+              return <React.Fragment key={`${message.id}-${index}`}></React.Fragment>;
+            })
+          ) : (
+            <div className="text-gray-500">Processing response...</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback for any other message types
   if (Array.isArray(message.parts) && message.parts.length !== 0) {
     return (
       <div className="mb-4">
-        {message.parts.map((part: any, index: any) => {
+        {message.parts.map((part: any, index: number) => {
           if (part.type === "text") {
             return (
               <div key={`${message.id}-${index}`} className="mb-4">
@@ -219,35 +254,11 @@ function MessageBody({ message }: { message: any }) {
           }
 
           if (part.type.startsWith("tool-")) {
-            // if (
-            //   part.toolInvocation.state === "result" &&
-            //   part.toolInvocation.result.isError
-            // ) {
-            //   return (
-            //     <div
-            //       key={index}
-            //       className="border-red-500 border text-sm text-red-800 rounded bg-red-100 px-2 py-1 mt-2 mb-4"
-            //     >
-            //       {part.toolInvocation.result?.content?.map(
-            //         (content: { type: "text"; text: string }, i: number) => (
-            //           <div key={i}>{content.text}</div>
-            //         )
-            //       )}
-            //       {/* Unexpectedly failed while using tool{" "}
-            //       {part.toolInvocation.toolName}. Please try again. again. */}
-            //     </div>
-            //   );
-            // }
-
-            // if (
-            //   message.parts!.length - 1 == index &&
-            //   part.toolInvocation.state !== "result"
-            // ) {
-            return <ToolMessage toolInvocation={part} />;
-            // } else {
-            //   return undefined;
-            // }
+            return <ToolMessage key={`${message.id}-${index}`} toolInvocation={part} />;
           }
+          
+          // Return null for unhandled cases with a key
+          return <React.Fragment key={`${message.id}-${index}`}></React.Fragment>;
         })}
       </div>
     );

@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { stackServerApp } from "@/auth/stack-auth";
 import { db } from "@/db/schema";
-import { userSubscriptions } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { userSubscriptions, appUsers } from "@/db/schema";
+import { eq, count } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,7 +36,22 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    return new Response(JSON.stringify(subscriptionRecord), {
+    // Get app count for the user
+    const appCountResult = await db
+      .select({ count: count() })
+      .from(appUsers)
+      .where(eq(appUsers.userId, user.id))
+      .limit(1);
+
+    const appCount = appCountResult[0]?.count || 0;
+
+    // Add app count to the response
+    const response = {
+      ...subscriptionRecord,
+      appCount,
+    };
+
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

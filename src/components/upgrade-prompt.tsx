@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { loadStripe } from "@stripe/stripe-js";
@@ -13,12 +13,10 @@ export function UpgradePrompt({ messageCount }: { messageCount: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState<'monthly' | 'yearly' | false>(false);
 
-  // Show the upgrade prompt after 5 messages
-  useEffect(() => {
-    if (messageCount === 5) {
-      setIsOpen(true);
-    }
-  }, [messageCount]);
+  // Show the upgrade prompt after 10 messages
+  if (messageCount === 10) {
+    setIsOpen(true);
+  }
 
   const handleUpgrade = async (plan: 'monthly' | 'yearly') => {
     setIsLoading(plan);
@@ -51,7 +49,7 @@ export function UpgradePrompt({ messageCount }: { messageCount: number }) {
     } catch (err) {
       console.error('Error creating checkout session:', err);
     } finally {
-      setIsLoading(false);
+      // Don't reset isLoading here - let the redirect happen first
     }
   };
 
@@ -59,7 +57,9 @@ export function UpgradePrompt({ messageCount }: { messageCount: number }) {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Upgrade to AUN.AI Pro</DialogTitle>
+          <DialogTitle>
+            Upgrade to AUN.AI Pro
+          </DialogTitle>
           <DialogDescription>
             You've reached the limit of free messages. Upgrade to AUN.AI Pro for unlimited access.
           </DialogDescription>
@@ -73,10 +73,10 @@ export function UpgradePrompt({ messageCount }: { messageCount: number }) {
             </div>
             <Button 
               onClick={() => handleUpgrade('monthly')} 
-              disabled={isLoading === 'monthly' || isLoading === 'yearly'}
-              className="whitespace-nowrap"
+              disabled={isLoading === 'monthly'}
+              className={isLoading === 'monthly' ? "whitespace-nowrap opacity-50" : "whitespace-nowrap"}
             >
-              {isLoading === 'monthly' ? "Processing..." : "upgrade to aun.ai pro"}
+              {isLoading === 'monthly' ? "Processing..." : "Upgrade"}
             </Button>
           </div>
           
@@ -87,10 +87,10 @@ export function UpgradePrompt({ messageCount }: { messageCount: number }) {
             </div>
             <Button 
               onClick={() => handleUpgrade('yearly')} 
-              disabled={isLoading === 'monthly' || isLoading === 'yearly'}
-              className="whitespace-nowrap"
+              disabled={isLoading === 'yearly'}
+              className={isLoading === 'yearly' ? "whitespace-nowrap opacity-50" : "whitespace-nowrap"}
             >
-              {isLoading === 'yearly' ? "Processing..." : "upgrade to aun.ai pro"}
+              {isLoading === 'yearly' ? "Processing..." : "Upgrade"}
             </Button>
           </div>
           

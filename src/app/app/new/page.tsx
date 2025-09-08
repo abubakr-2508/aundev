@@ -40,10 +40,34 @@ export default async function NewAppRedirectPage({
     message = search.message;
   }
 
-  const { id } = await createApp({
-    initialMessage: decodeURIComponent(message),
-    templateId: search.template as string,
-  });
+  // Ensure template is defined and valid, default to "nextjs" if not
+  let templateId: string;
+  if (Array.isArray(search.template)) {
+    templateId = search.template[0];
+  } else {
+    templateId = search.template as string;
+  }
 
-  redirect(`/app/${id}`);
+  // Validate template or use default
+  if (!templateId || typeof templateId !== 'string') {
+    templateId = 'nextjs';
+  }
+
+  try {
+    const { id } = await createApp({
+      initialMessage: message ? decodeURIComponent(message) : undefined,
+      templateId,
+    });
+
+    redirect(`/app/${id}`);
+  } catch (error: any) {
+    // If it's an app limit error, redirect to a special page or show upgrade option
+    if (error.message && error.message.includes("Free plan limit reached")) {
+      // Redirect to home page with upgrade prompt
+      redirect(`/app-limit-reached`);
+    }
+    
+    // For other errors, re-throw
+    throw error;
+  }
 }

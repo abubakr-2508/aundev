@@ -36,9 +36,20 @@ export function SubscriptionDashboard() {
     }
   };
 
+  const handleUpgradeClick = () => {
+    // Dispatch event to trigger upgrade modal in parent component
+    const event = new CustomEvent('upgradeRequested');
+    window.dispatchEvent(event);
+  };
+
   if (loading) {
     return <div>Loading subscription information...</div>;
   }
+
+  // Determine app limit based on subscription type
+  const appLimit = subscription.subscriptionType === "free" ? 3 : "Unlimited";
+  const isPro = subscription.subscriptionType === "monthly" || subscription.subscriptionType === "yearly";
+  const appCount = subscription.appCount || 0;
 
   return (
     <Card>
@@ -62,8 +73,11 @@ export function SubscriptionDashboard() {
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {subscription.subscriptionType === "free" 
-                    ? "Limited to 5 messages" 
+                    ? "Limited to 10 messages" 
                     : "Unlimited messages"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Apps created: {appCount} / {appLimit}
                 </p>
               </div>
               <div className="text-right">
@@ -85,6 +99,19 @@ export function SubscriptionDashboard() {
                 Manage Subscription
               </Button>
             )}
+            
+            {subscription.subscriptionType === "free" && appCount >= 3 && (
+              <div className="text-sm text-muted-foreground bg-yellow-50 p-3 rounded-md">
+                You've reached the app creation limit for the free plan. 
+                <Button 
+                  variant="link" 
+                  className="p-0 ml-1 h-auto"
+                  onClick={handleUpgradeClick}
+                >
+                  Upgrade to Pro
+                </Button> for unlimited apps.
+              </div>
+            )}
           </div>
         ) : (
           <div className="text-center py-4">
@@ -93,20 +120,5 @@ export function SubscriptionDashboard() {
         )}
       </CardContent>
     </Card>
-  );
-}
-
-// Simple upgrade button component for use in the header
-export function UpgradeToProButton() {
-  // This component will be updated to use the modal
-  const handleUpgrade = () => {
-    // For now, we'll keep the simple redirect
-    window.location.href = "/";
-  };
-
-  return (
-    <Button onClick={handleUpgrade} variant="default" size="sm">
-      Upgrade to Pro
-    </Button>
   );
 }

@@ -70,11 +70,11 @@ npx drizzle-kit push
 
 ### Message Tracking
 
-The system tracks user messages and shows the upgrade prompt after 5 messages. The message count is stored in the `user_subscriptions` table.
+The system tracks user messages and shows the upgrade prompt after 10 messages. The message count is stored in the `user_subscriptions` table.
 
 ### Upgrade Flow
 
-1. After 5 messages, the upgrade prompt automatically appears
+1. After 10 messages, the upgrade prompt automatically appears
 2. User can choose between monthly ($25) or yearly ($250) plans
 3. User is redirected to Stripe Checkout
 4. After successful payment, user is redirected to the success page
@@ -124,7 +124,7 @@ If you can't use Stripe CLI, you can test the checkout flow manually:
 Since you're using localhost, you can test the complete flow:
 
 1. Ensure `NEXT_PUBLIC_BASE_URL` is set to `http://localhost:3000`
-2. Test the upgrade prompt appearing after 5 messages
+2. Test the upgrade prompt appearing after 10 messages
 3. Test redirecting to Stripe Checkout
 4. Use test card numbers to complete payments
 5. Verify the success/cancel redirects work correctly
