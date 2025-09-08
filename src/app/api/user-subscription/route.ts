@@ -8,8 +8,13 @@ export async function GET(req: NextRequest) {
   try {
     const user = await stackServerApp.getUser();
     if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
+      return new Response(JSON.stringify({ 
+        subscriptionType: "free",
+        appCount: 0,
+        messageCount: "0",
+        subscriptionStatus: "active"
+      }), {
+        status: 200,
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -57,8 +62,13 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("Error getting subscription:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
+    return new Response(JSON.stringify({ 
+      subscriptionType: "free",
+      appCount: 0,
+      messageCount: "0",
+      subscriptionStatus: "active"
+    }), {
+      status: 200,
       headers: { "Content-Type": "application/json" },
     });
   }

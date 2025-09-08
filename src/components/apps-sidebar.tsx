@@ -10,12 +10,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { AppLimitTooltip } from "@/components/app-limit-tooltip";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -25,21 +19,25 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { renameApp } from "@/actions/rename-app";
+import { deleteApp } from "@/actions/delete-app";
 import { toast } from "sonner";
 
 export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onToggle: () => void }) {
-  const { data: apps = [] } = useQuery({
+  const { data: apps = [], error, isLoading, refetch } = useQuery({
     queryKey: ["userApps"],
     queryFn: getUserApps,
     initialData: [],
+    retry: false, // Don't retry on error
   });
   
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentApp, setCurrentApp] = useState<{ id: string; name: string } | null>(null);
   const [newName, setNewName] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; app: { id: string; name: string } } | null>(null);
   const router = useRouter();
 
@@ -51,9 +49,20 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
         if (response.ok) {
           const data = await response.json();
           setSubscription(data);
+        } else {
+          // Set default values if API call fails
+          setSubscription({
+            subscriptionType: "free",
+            appCount: 0
+          });
         }
       } catch (error) {
         console.error("Error fetching subscription:", error);
+        // Set default values if API call fails
+        setSubscription({
+          subscriptionType: "free",
+          appCount: 0
+        });
       } finally {
         setLoading(false);
       }
@@ -105,6 +114,12 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
     setContextMenu(null);
   };
 
+  const handleDeleteApp = (app: { id: string; name: string }) => {
+    setCurrentApp(app);
+    setIsDeleteDialogOpen(true);
+    setContextMenu(null);
+  };
+
   const handleRenameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentApp) return;
@@ -120,6 +135,26 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
       toast.error(error instanceof Error ? error.message : "Failed to rename app");
     } finally {
       setIsRenaming(false);
+    }
+  };
+
+  const handleDeleteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentApp) return;
+    
+    setIsDeleting(true);
+    
+    try {
+      await deleteApp(currentApp.id);
+      toast.success("App deleted successfully");
+      setIsDeleteDialogOpen(false);
+      setCurrentApp(null);
+      // Refetch apps to update the list
+      refetch();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to delete app");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -191,25 +226,33 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
         
         <ScrollArea className="flex-1 px-2">
           <div className="space-y-1 p-2">
-            {apps.map((app) => (
-              <div key={app.id} onContextMenu={(e) => handleContextMenu(e, { id: app.id, name: app.name })}>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start h-10 px-3 py-2 text-sm font-normal text-left"
-                  asChild
-                >
-                  <Link href={`/app/${app.id}`}>
-                    <AppWindow className="mr-2 h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">{app.name}</span>
-                  </Link>
-                </Button>
+            {isLoading ? (
+              <div className="text-center text-muted-foreground text-sm p-4">
+                Loading apps...
               </div>
-            ))}
-            
-            {apps.length === 0 && (
+            ) : error ? (
+              <div className="text-center text-muted-foreground text-sm p-4">
+                Please log in to see your apps
+              </div>
+            ) : apps.length === 0 ? (
               <div className="text-center text-muted-foreground text-sm p-4">
                 No apps created yet
               </div>
+            ) : (
+              apps.map((app) => (
+                <div key={app.id} onContextMenu={(e) => handleContextMenu(e, { id: app.id, name: app.name })}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start h-10 px-3 py-2 text-sm font-normal text-left"
+                    asChild
+                  >
+                    <Link href={`/app/${app.id}`}>
+                      <AppWindow className="mr-2 h-4 w-4 flex-shrink-0" />
+                      <span className="truncate">{app.name}</span>
+                    </Link>
+                  </Button>
+                </div>
+              ))
             )}
           </div>
         </ScrollArea>
@@ -248,9 +291,16 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
           >
             Open
           </button>
+          <button
+            className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground w-full text-left text-red-600 dark:text-red-400"
+            onClick={() => handleDeleteApp(contextMenu.app)}
+          >
+            Delete
+          </button>
         </div>
       )}
 
+      {/* Rename Dialog */}
       <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -279,6 +329,37 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
               </Button>
               <Button type="submit" disabled={isRenaming || !newName.trim()}>
                 {isRenaming ? "Renaming..." : "Rename"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete App</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete "{currentApp?.name}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleDeleteSubmit}>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsDeleteDialogOpen(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                variant="destructive"
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Deleting..." : "Delete"}
               </Button>
             </DialogFooter>
           </form>

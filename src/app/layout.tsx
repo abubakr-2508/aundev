@@ -20,14 +20,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Aun AI",
-  description: "Aun AI, From Idea to Product",
-  icons: {
-    icon: "/favicon.ico",
-  },
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
-  ],
+  description: "From Idea to Product",
   manifest: "/manifest.json",
 };
 
