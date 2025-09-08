@@ -35,7 +35,7 @@ if (typeof window !== 'undefined') {
 
 export const metadata: Metadata = {
   title: "aun.ai",
-  description: "Open Source AI App Builder",
+  description: "Empowering Ideas with AI",
   manifest: "/manifest.json",
 };
 
