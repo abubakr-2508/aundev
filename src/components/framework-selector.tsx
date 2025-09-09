@@ -30,7 +30,7 @@ export function FrameworkSelector({
           <Button
             variant="outline"
             size="sm"
-            className="h-7 gap-2 px-2 text-xs bg-transparent border-none hover:bg-gray-100 hover:bg-opacity-50 shadow-none"
+            className="h-7 gap-2 px-2 text-xs bg-transparent border-none hover:bg-muted shadow-none"
             style={{ boxShadow: "none" }}
           >
             <Image
@@ -46,7 +46,7 @@ export function FrameworkSelector({
         </DropdownMenuTrigger>
         <DropdownMenuContent
           align="start"
-          className="min-w-[8rem] !shadow-none border border-gray-200"
+          className="min-w-[8rem] !shadow-none border border-border"
           style={{ boxShadow: "none" }}
         >
           {Object.entries(templates).map(([key, template]) => (

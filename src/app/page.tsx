@@ -13,6 +13,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PromptInputTextareaWithTypingAnimation } from "@/components/prompt-input";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { AppsSidebar } from "@/components/apps-sidebar";
+import { ModeToggle } from "@/components/theme-provider";
 
 const queryClient = new QueryClient();
 
@@ -30,9 +31,9 @@ export default function Home() {
       setIsUpgradeModalOpen(true);
     };
 
-    window.addEventListener('upgradeRequested', handleUpgradeRequest);
+    window.addEventListener("upgradeRequested", handleUpgradeRequest);
     return () => {
-      window.removeEventListener('upgradeRequested', handleUpgradeRequest);
+      window.removeEventListener("upgradeRequested", handleUpgradeRequest);
     };
   }, []);
 
@@ -56,16 +57,16 @@ export default function Home() {
     <QueryClientProvider client={queryClient}>
       <div className="flex h-screen">
         {/* Apps Sidebar - Collapsible */}
-        <AppsSidebar 
-          isCollapsed={isSidebarCollapsed} 
-          onToggle={toggleSidebar} 
+        <AppsSidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggle={toggleSidebar}
         />
-        
+
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col">
-          <main className="min-h-screen p-4 relative flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-background">
+          <main className="min-h-screen p-4 relative flex-1 flex flex-col bg-background">
             <div className="flex w-full justify-between items-center">
-              <h1 className="text-lg font-bold flex-1 sm:w-80">
+              <h1 className="text-lg font-bold flex-1 sm:w-80 text-foreground">
                 <a href="https://www.aun.ai">AUN.AI</a>
               </h1>
               {/* Logo hidden as per user request */}
@@ -77,7 +78,12 @@ export default function Home() {
                 height={64}
               /> */}
               <div className="flex items-center gap-4 flex-1 sm:w-80 justify-end">
-                <Button onClick={handleUpgradeClick} variant="default" size="sm">
+                <ModeToggle />
+                <Button
+                  onClick={handleUpgradeClick}
+                  variant="default"
+                  size="sm"
+                >
                   Upgrade
                 </Button>
                 <UserButton />
@@ -85,14 +91,20 @@ export default function Home() {
             </div>
 
             <div className="flex-1 flex items-center justify-center">
-              <div className="w-full max-w-lg px-4 sm:px-0 mx-auto flex flex-col items-center mt-8 sm:mt-12 md:mt-16 col-start-1 col-end-1 row-start-1 row-end-1 z-10">
-                <p className="text-neutral-600 text-center mb-6 text-3xl sm:text-4xl md:text-5xl font-bold">
+              <div className="w-full max-w-3xl px-4 sm:px-0 mx-auto flex flex-col items-center mt-8 sm:mt-12 md:mt-16 col-start-1 col-end-1 row-start-1 row-end-1 z-10">
+                <p
+                  className="text-foreground text-center mb-6 text-3xl sm:text-4xl md:text-5xl font-bold"
+                  style={{
+                    textShadow:
+                      "0 0 4px rgba(255, 255, 255, 0.6), 0 0 4px rgba(255, 255, 255, 0.4)",
+                  }}
+                >
                   Ideas In, Magic Out
                 </p>
 
                 <div className="w-full relative my-5">
                   <div className="relative w-full max-w-full overflow-hidden">
-                    <div className="w-full bg-accent rounded-md relative z-10 border transition-colors">
+                    <div className="w-full rounded-3xl relative z-10 border-2 border-gray-200 dark:border dark:border-border transition-all duration-200 bg-[#F5F5F5] dark:bg-[#171a1a] hover:border-gray-400 focus-within:border-gray-500 dark:hover:border-border dark:focus-within:border-border">
                       <PromptInput
                         leftSlot={
                           <FrameworkSelector
@@ -104,7 +116,7 @@ export default function Home() {
                         value={prompt}
                         onValueChange={setPrompt}
                         onSubmit={handleSubmit}
-                        className="relative z-10 border-none bg-transparent shadow-none focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-200 transition-all duration-200 ease-in-out "
+                        className="relative z-10 border-none bg-transparent shadow-none transition-all duration-200 ease-in-out"
                       >
                         <PromptInputTextareaWithTypingAnimation />
                         <PromptInputActions>
@@ -128,10 +140,10 @@ export default function Home() {
                 <Examples setPrompt={setPrompt} />
               </div>
             </div>
-            
-            <UpgradeModal 
-              isOpen={isUpgradeModalOpen} 
-              onClose={() => setIsUpgradeModalOpen(false)} 
+
+            <UpgradeModal
+              isOpen={isUpgradeModalOpen}
+              onClose={() => setIsUpgradeModalOpen(false)}
             />
           </main>
         </div>

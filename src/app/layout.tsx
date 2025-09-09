@@ -33,10 +33,16 @@ function Footer() {
             © 2025 Aun. All rights reserved.
           </div>
           <div className="flex gap-6 text-sm">
-            <a href="/privacy" className="text-muted-foreground hover:text-foreground transition-colors">
+            <a
+              href="/privacy"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Privacy Policy
             </a>
-            <a href="/terms" className="text-muted-foreground hover:text-foreground transition-colors">
+            <a
+              href="/terms"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
               Terms of Service
             </a>
           </div>
@@ -63,9 +69,8 @@ export default function RootLayout({
             <ThemeProvider
               attribute="class"
               defaultTheme="light"
-              enableSystem={false}
+              enableSystem={true}
               disableTransitionOnChange
-              forcedTheme="light"
             >
               <Toaster />
               {children}

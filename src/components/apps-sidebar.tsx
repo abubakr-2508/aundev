@@ -22,23 +22,41 @@ import { renameApp } from "@/actions/rename-app";
 import { deleteApp } from "@/actions/delete-app";
 import { toast } from "sonner";
 
-export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; onToggle: () => void }) {
-  const { data: apps = [], error, isLoading, refetch } = useQuery({
+export function AppsSidebar({
+  isCollapsed,
+  onToggle,
+}: {
+  isCollapsed: boolean;
+  onToggle: () => void;
+}) {
+  const {
+    data: apps = [],
+    error,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["userApps"],
     queryFn: getUserApps,
     initialData: [],
     retry: false, // Don't retry on error
   });
-  
+
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [currentApp, setCurrentApp] = useState<{ id: string; name: string } | null>(null);
+  const [currentApp, setCurrentApp] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [newName, setNewName] = useState("");
   const [isRenaming, setIsRenaming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; app: { id: string; name: string } } | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    app: { id: string; name: string };
+  } | null>(null);
   const router = useRouter();
 
   // Fetch subscription info to check app limits
@@ -53,7 +71,7 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
           // Set default values if API call fails
           setSubscription({
             subscriptionType: "free",
-            appCount: 0
+            appCount: 0,
           });
         }
       } catch (error) {
@@ -61,7 +79,7 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
         // Set default values if API call fails
         setSubscription({
           subscriptionType: "free",
-          appCount: 0
+          appCount: 0,
         });
       } finally {
         setLoading(false);
@@ -81,10 +99,10 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
   // Check if user can create more apps
   const canCreateApp = () => {
     if (loading || !subscription) return true; // Allow by default while loading
-    
+
     const isFreeUser = subscription.subscriptionType === "free";
     const appCount = subscription.appCount || 0;
-    
+
     // Free users can create up to 3 apps, pro users have unlimited
     return !isFreeUser || appCount < 3;
   };
@@ -98,7 +116,10 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
     }
   };
 
-  const handleContextMenu = (e: React.MouseEvent, app: { id: string; name: string }) => {
+  const handleContextMenu = (
+    e: React.MouseEvent,
+    app: { id: string; name: string }
+  ) => {
     e.preventDefault();
     setContextMenu({
       x: e.clientX,
@@ -123,16 +144,18 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
   const handleRenameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentApp) return;
-    
+
     setIsRenaming(true);
-    
+
     try {
       await renameApp(currentApp.id, newName);
       toast.success("App renamed successfully");
       setIsRenameDialogOpen(false);
       setCurrentApp(null);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to rename app");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to rename app"
+      );
     } finally {
       setIsRenaming(false);
     }
@@ -141,9 +164,9 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
   const handleDeleteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentApp) return;
-    
+
     setIsDeleting(true);
-    
+
     try {
       await deleteApp(currentApp.id);
       toast.success("App deleted successfully");
@@ -152,7 +175,9 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
       // Refetch apps to update the list
       refetch();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to delete app");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to delete app"
+      );
     } finally {
       setIsDeleting(false);
     }
@@ -160,21 +185,21 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
 
   if (isCollapsed) {
     return (
-      <div className="flex h-full border-r bg-muted/10 w-12">
+      <div className="flex h-full border-r w-12 bg-gray-50 dark:bg-[#171a1a]">
         <div className="flex flex-col items-center py-4 space-y-4 w-full">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={onToggle}
             className="h-8 w-8"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
-          
+
           <AppLimitTooltip>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={handleNewAppClick}
               disabled={!canCreateApp()}
               className="h-8 w-8"
@@ -193,13 +218,13 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
 
   return (
     <>
-      <div className="flex flex-col h-full border-r bg-muted/10 w-64">
+      <div className="flex flex-col h-full border-r w-64 bg-gray-50 dark:bg-[#171a1a]">
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold">Your Apps</h2>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onToggle}
               className="h-8 w-8"
             >
@@ -207,8 +232,8 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
             </Button>
           </div>
           <AppLimitTooltip>
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               onClick={handleNewAppClick}
               disabled={!canCreateApp()}
             >
@@ -216,14 +241,14 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
               New App
             </Button>
           </AppLimitTooltip>
-          
+
           {isFreeUser && appCount >= appLimit && (
-            <div className="text-xs text-yellow-600 bg-yellow-50 p-2 rounded mt-2 text-center">
+            <div className="text-xs text-amber-800 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/30 p-2 rounded mt-2 text-center border border-amber-200 dark:border-amber-800">
               App limit reached ({appCount}/{appLimit})
             </div>
           )}
         </div>
-        
+
         <ScrollArea className="flex-1 px-2">
           <div className="space-y-1 p-2">
             {isLoading ? (
@@ -240,7 +265,12 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
               </div>
             ) : (
               apps.map((app) => (
-                <div key={app.id} onContextMenu={(e) => handleContextMenu(e, { id: app.id, name: app.name })}>
+                <div
+                  key={app.id}
+                  onContextMenu={(e) =>
+                    handleContextMenu(e, { id: app.id, name: app.name })
+                  }
+                >
                   <Button
                     variant="ghost"
                     className="w-full justify-start h-10 px-3 py-2 text-sm font-normal text-left"
@@ -256,7 +286,7 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
             )}
           </div>
         </ScrollArea>
-        
+
         <div className="p-4 border-t">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs">
@@ -341,7 +371,8 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
           <DialogHeader>
             <DialogTitle>Delete App</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete "{currentApp?.name}"? This action cannot be undone.
+              Are you sure you want to delete "{currentApp?.name}"? This action
+              cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleDeleteSubmit}>
@@ -354,11 +385,7 @@ export function AppsSidebar({ isCollapsed, onToggle }: { isCollapsed: boolean; o
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                variant="destructive"
-                disabled={isDeleting}
-              >
+              <Button type="submit" variant="destructive" disabled={isDeleting}>
                 {isDeleting ? "Deleting..." : "Delete"}
               </Button>
             </DialogFooter>
