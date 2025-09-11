@@ -66,8 +66,10 @@ export default function Home() {
         )}
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col bg-background">
-          <main className="min-h-screen p-4 relative flex-1 flex flex-col bg-background">
+        <div className="flex-1 flex flex-col bg-background relative overflow-hidden">
+          {/* Orange gradient background for both light and dark mode */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[200%] h-[60vh] rounded-[50%] bg-gradient-to-t from-[rgb(251,102,0)] via-[rgb(251,102,0)]/60 to-transparent blur-3xl opacity-80 overflow-hidden pointer-events-none" />
+          <main className="min-h-screen p-4 relative flex-1 flex flex-col bg-transparent">
             <div className="flex w-full justify-between items-center">
               <h1 className="text-lg font-bold flex-1 sm:w-80 text-foreground">
                 <a href="https://www.aun.ai">AUN.AI</a>
