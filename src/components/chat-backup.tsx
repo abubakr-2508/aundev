@@ -39,14 +39,14 @@ export default function Chat(props: {
   const [input, setInput] = useState("");
   const [messageCount, setMessageCount] = useState(0);
 
-  // Fetch initial message count when component mounts
+  // Fetch initial message count
   useEffect(() => {
     const fetchMessageCount = async () => {
       try {
         const response = await fetch("/api/track-message");
         if (response.ok) {
           const data = await response.json();
-          setMessageCount(data.count || 0);
+          setMessageCount(data.messageCount);
         }
       } catch (error) {
         console.error("Error fetching message count:", error);
@@ -59,19 +59,19 @@ export default function Chat(props: {
   // Track message count
   useEffect(() => {
     // Only count user messages, not AI responses
-    const userMessages = messages.filter((m) => m.role === "user");
+    const userMessages = messages.filter(m => m.role === "user");
     if (userMessages.length > messageCount) {
       // Increment message count and send to API
       const newCount = messageCount + 1;
       setMessageCount(newCount);
-
+      
       // Send to API to track the message
       fetch("/api/track-message", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-      }).catch((error) => {
+      }).catch(error => {
         console.error("Error tracking message:", error);
       });
     }
@@ -145,10 +145,7 @@ export default function Chat(props: {
   }
 
   return (
-    <div
-      className="flex flex-col h-full"
-      style={{ transform: "translateZ(0)" }}
-    >
+    <div className="flex flex-col h-full" style={{ transform: "translateZ(0)" }}>
       {props.topBar}
       <div
         className="flex-1 overflow-y-auto flex flex-col space-y-6 min-h-0"
@@ -160,7 +157,7 @@ export default function Chat(props: {
           ))}
         </ChatContainer>
       </div>
-
+      
       <div className="flex-shrink-0 p-3 transition-all bg-background md:backdrop-blur-sm">
         <PromptInputBasic
           stop={handleStop}
@@ -173,7 +170,7 @@ export default function Chat(props: {
           isGenerating={props.isLoading || chat?.state === "running"}
         />
       </div>
-      {/* Show upgrade prompt after 10 messages */}
+      {/* Show upgrade prompt after 10 messages */
       <UpgradePrompt messageCount={messageCount} />
     </div>
   );
@@ -227,20 +224,13 @@ function MessageBody({ message }: { message: any }) {
                   </div>
                 );
               }
-
+              
               if (part.type.startsWith("tool-")) {
-                return (
-                  <ToolMessage
-                    key={`${message.id}-${index}`}
-                    toolInvocation={part}
-                  />
-                );
+                return <ToolMessage key={`${message.id}-${index}`} toolInvocation={part} />;
               }
-
+              
               // Return null for unhandled cases with a key
-              return (
-                <React.Fragment key={`${message.id}-${index}`}></React.Fragment>
-              );
+              return <React.Fragment key={`${message.id}-${index}`}></React.Fragment>;
             })
           ) : (
             <div className="text-gray-500">Processing response...</div>
@@ -266,18 +256,11 @@ function MessageBody({ message }: { message: any }) {
           }
 
           if (part.type.startsWith("tool-")) {
-            return (
-              <ToolMessage
-                key={`${message.id}-${index}`}
-                toolInvocation={part}
-              />
-            );
+            return <ToolMessage key={`${message.id}-${index}`} toolInvocation={part} />;
           }
-
+          
           // Return null for unhandled cases with a key
-          return (
-            <React.Fragment key={`${message.id}-${index}`}></React.Fragment>
-          );
+          return <React.Fragment key={`${message.id}-${index}`}></React.Fragment>;
         })}
       </div>
     );

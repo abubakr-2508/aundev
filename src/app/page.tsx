@@ -8,7 +8,7 @@ import LogoSvg from "@/logo.svg";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ExampleButton } from "@/components/ExampleButton";
-import { UserButton } from "@stackframe/stack";
+import { UserButton, useUser } from "@stackframe/stack";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PromptInputTextareaWithTypingAnimation } from "@/components/prompt-input";
 import { UpgradeModal } from "@/components/upgrade-modal";
@@ -24,6 +24,7 @@ export default function Home() {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const router = useRouter();
+  const user = useUser();
 
   // Listen for upgrade requests from other components
   useEffect(() => {
@@ -56,11 +57,13 @@ export default function Home() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex h-screen">
-        {/* Apps Sidebar - Collapsible */}
-        <AppsSidebar
-          isCollapsed={isSidebarCollapsed}
-          onToggle={toggleSidebar}
-        />
+        {/* Apps Sidebar - Only show when authenticated */}
+        {user && (
+          <AppsSidebar
+            isCollapsed={isSidebarCollapsed}
+            onToggle={toggleSidebar}
+          />
+        )}
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col bg-background">
@@ -91,7 +94,7 @@ export default function Home() {
             </div>
 
             <div className="flex-1 flex items-center justify-center">
-              <div className="w-full max-w-3xl px-4 sm:px-0 mx-auto flex flex-col items-center mt-8 sm:mt-12 md:mt-16 col-start-1 col-end-1 row-start-1 row-end-1 z-10">
+              <div className="w-full max-w-3xl px-4 sm:px-0 mx-auto flex flex-col items-center mt-4 sm:mt-6 md:mt-0 col-start-1 col-end-1 row-start-1 row-end-1 z-10">
                 <p
                   className="text-foreground text-center mb-6 text-3xl sm:text-4xl md:text-5xl font-bold"
                   style={{
@@ -99,7 +102,7 @@ export default function Home() {
                       "0 0 4px rgba(255, 255, 255, 0.6), 0 0 4px rgba(255, 255, 255, 0.4)",
                   }}
                 >
-                  Ideas In, Magic Out
+                  AUN.AI
                 </p>
 
                 <div className="w-full relative my-5">
