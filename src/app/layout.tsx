@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { StackProvider, StackTheme } from "@stackframe/stack";
-import { stackServerApp } from "@/auth/stack-auth";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -64,20 +62,16 @@ export default function RootLayout({
           `${geistSans.variable} ${geistMono.variable} antialiased`
         )}
       >
-        <StackProvider app={stackServerApp}>
-          <StackTheme>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="light"
-              enableSystem={true}
-              disableTransitionOnChange
-            >
-              <Toaster />
-              {children}
-              <Footer />
-            </ThemeProvider>
-          </StackTheme>
-        </StackProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={true}
+          disableTransitionOnChange
+        >
+          <Toaster />
+          {children}
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );

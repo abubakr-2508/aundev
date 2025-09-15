@@ -68,3 +68,9 @@ export const userSubscriptions = pgTable("user_subscriptions", {
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
 });
+
+export const userFreestyleData = pgTable("user_freestyle_data", {
+  userId: text("user_id").primaryKey(),
+  freestyleIdentity: text("freestyle_identity").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});

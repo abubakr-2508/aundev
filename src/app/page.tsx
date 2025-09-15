@@ -7,13 +7,16 @@ import Image from "next/image";
 import LogoSvg from "@/logo.svg";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ExampleButton } from "@/components/ExampleButton";
-import { UserButton, useUser } from "@stackframe/stack";
+import { createSupabaseBrowserClient } from "@/lib/supabase-client";
+import { getProviderSetupMessage } from "@/lib/auth-helpers";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { PromptInputTextareaWithTypingAnimation } from "@/components/prompt-input";
 import { UpgradeModal } from "@/components/upgrade-modal";
 import { AppsSidebar } from "@/components/apps-sidebar";
 import { ModeToggle } from "@/components/theme-provider";
+import { User } from "@supabase/supabase-js";
 
 const queryClient = new QueryClient();
 
@@ -23,8 +26,28 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
-  const user = useUser();
+  const supabase = createSupabaseBrowserClient();
+
+  // Check user authentication status
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    checkUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Listen for upgrade requests from other components
   useEffect(() => {
@@ -39,11 +62,46 @@ export default function Home() {
   }, []);
 
   const handleSubmit = async () => {
+    if (!user) {
+      // If user is not logged in, redirect to sign in
+      handleSignIn();
+      return;
+    }
+
     setIsLoading(true);
 
-    router.push(
-      `/app/new?message=${encodeURIComponent(prompt)}&template=${framework}`
-    );
+    try {
+      // Check user's subscription and app count
+      const subscriptionResponse = await fetch("/api/user-subscription");
+      
+      if (!subscriptionResponse.ok) {
+        throw new Error("Failed to fetch subscription information");
+      }
+
+      const subscription = await subscriptionResponse.json();
+      
+      // Check if user has reached app limit (3 for free, unlimited for pro)
+      const isFreeUser = subscription.subscriptionType === "free";
+      const appCount = subscription.appCount || 0;
+      
+      if (isFreeUser && appCount >= 3) {
+        // User has reached the limit, show upgrade modal instead of creating app
+        setIsLoading(false);
+        setIsUpgradeModalOpen(true);
+        return;
+      }
+
+      // User can create app, proceed with navigation
+      router.push(
+        `/app/new?message=${encodeURIComponent(prompt)}&template=${framework}`
+      );
+    } catch (error) {
+      console.error("Error checking subscription:", error);
+      // In case of error, still allow the user to proceed (fail open)
+      router.push(
+        `/app/new?message=${encodeURIComponent(prompt)}&template=${framework}`
+      );
+    }
   };
 
   const handleUpgradeClick = () => {
@@ -52,6 +110,82 @@ export default function Home() {
 
   const toggleSidebar = () => {
     setIsSidebarCollapsed(!isSidebarCollapsed);
+  };
+
+  const handleSignIn = async (provider: 'github' | 'google' | 'email' = 'github') => {
+    try {
+      if (provider === 'email') {
+        // For email sign-in, we'll show a prompt for email and password
+        const email = window.prompt("Enter your email:");
+        if (!email) return;
+        
+        const password = window.prompt("Enter your password:");
+        if (!password) return;
+
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) {
+          console.error("Error signing in:", error);
+          // If sign in fails, offer to sign up
+          if (error.message.includes('Invalid login credentials')) {
+            const confirmSignup = window.confirm("User not found. Would you like to sign up with this email and password?");
+            if (confirmSignup) {
+              const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email,
+                password,
+              });
+              
+              if (signUpError) {
+                alert(`Error signing up: ${signUpError.message}`);
+              } else {
+                alert("Sign up successful! Please check your email for confirmation.");
+              }
+            } else {
+              alert(`Error signing in: ${error.message}`);
+            }
+          } else {
+            alert(`Error signing in: ${error.message}`);
+          }
+        } else {
+          console.log("Sign in successful", data);
+        }
+      } else {
+        // Show a loading message for OAuth providers
+        alert(`Redirecting to ${provider} for authentication. Please complete the sign-in process in the new window.`);
+        
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo: `${window.location.origin}/`,
+          },
+        });
+
+        if (error) {
+          console.error("Error signing in:", error);
+          if (error.message.includes('Unsupported provider') || error.message.includes('provider is not enabled')) {
+            const setupMessage = getProviderSetupMessage(provider);
+            alert(`Error: ${setupMessage}`);
+          } else {
+            alert(`Error signing in with ${provider}: ${error.message}`);
+          }
+        } else {
+          console.log("Sign in successful, redirecting...", data);
+        }
+      }
+    } catch (err) {
+      console.error("Unexpected error during sign in:", err);
+      alert(`Unexpected error during sign in with ${provider}. Please try again.`);
+    }
+  };
+
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return (
@@ -91,7 +225,30 @@ export default function Home() {
                 >
                   Upgrade
                 </Button>
-                <UserButton />
+                {user ? (
+                  <Button onClick={handleSignOut} variant="outline" size="sm">
+                    Sign Out
+                  </Button>
+                ) : (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        Login
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleSignIn('github')}>
+                        GitHub
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSignIn('google')}>
+                        Google
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleSignIn('email')}>
+                        Email
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
 

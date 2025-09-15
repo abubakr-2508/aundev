@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { Stripe } from "stripe";
-import { stackServerApp } from "@/auth/stack-auth";
+import { createSupabaseServerClient } from "@/auth/supabase-auth";
 import { db } from "@/db/schema";
 import { userSubscriptions } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -10,8 +10,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await stackServerApp.getUser();
-    if (!user) {
+    const supabase = createSupabaseServerClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -33,7 +35,7 @@ export async function POST(req: NextRequest) {
     // If no customer ID exists, create a new customer
     if (!customerId) {
       const customer = await stripe.customers.create({
-        email: user.primaryEmail ?? undefined,
+        email: user.email ?? undefined,
         metadata: {
           userId: user.id,
         },

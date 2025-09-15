@@ -1,13 +1,15 @@
 import { NextRequest } from "next/server";
-import { stackServerApp } from "@/auth/stack-auth";
+import { createSupabaseServerClient } from "@/auth/supabase-auth";
 import { db } from "@/db/schema";
 import { userSubscriptions } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await stackServerApp.getUser();
-    if (!user) {
+    const supabase = createSupabaseServerClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -58,8 +60,10 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await stackServerApp.getUser();
-    if (!user) {
+    const supabase = createSupabaseServerClient();
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
